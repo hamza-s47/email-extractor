@@ -11,13 +11,37 @@ def root_route():
 
 @app.route('/api/extract', methods=['POST'])
 def extract_route():
-    data = request.get_json()
-    print("My Data", data)
+    mainData = ''
+    
+    if request.files:
+        mainData = request.files['file']
+        extractedEmails = email_extract(extractor.extract_text_from_file(mainData))
+        response = {
+            "message":"Successfully Extracted",
+            "emails":extractedEmails,
+            "emailCount":len(extractedEmails)
+        }
+        return jsonify(response), 200
 
-    response = {"message":"success!"}
-    return jsonify(response), 200
-# print(len( extract_text_from_url('https://hamzasiddiqui.netlify.app/')))
-# print(email_extract(extract_text_from_url('https://hamzasiddiqui.netlify.app/')))
+    else:
+        mainData = request.get_json()
+        if mainData['type'] == 'url':
+            extractedEmails = email_extract(extractor.extract_url(mainData['content']))
+            response = {
+                "message":"Successfully Extracted",
+                "emails":extractedEmails,
+                "emailCount":len(extractedEmails)
+            }
+            return jsonify(response), 200
+        else:
+            extractedEmails = email_extract(mainData['content'])
+            response = {
+                "message":"Successfully Extracted",
+                "emails":extractedEmails,
+                "emailCount":len(extractedEmails),
+                "textCount":len(mainData['content'])
+            }
+            return jsonify(response), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

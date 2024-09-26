@@ -17,13 +17,18 @@
   </style>
 </head>
 
-<body>
-  <section class="min-h-screen flex  text-gray-600 body-font overflow-hidden bg-purple-50 my-auto">
+<body class="min-h-screen">
+  <section class="relative min-h-[95vh] flex text-gray-600 body-font overflow-hidden bg-purple-50 my-auto">
+    <!-- LOGO -->
+    <div class="absolute top-5 left-5  md:top-10 md:left-10 w-16 md:w-20 rounded-full bg-purple-500 p-3 text-purple-50" >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <path d="M256 64C150 64 64 150 64 256s86 192 192 192c17.7 0 32 14.3 32 32s-14.3 32-32 32C114.6 512 0 397.4 0 256S114.6 0 256 0S512 114.6 512 256l0 32c0 53-43 96-96 96c-29.3 0-55.6-13.2-73.2-33.9C320 371.1 289.5 384 256 384c-70.7 0-128-57.3-128-128s57.3-128 128-128c27.9 0 53.7 8.9 74.7 24.1c5.7-5 13.1-8.1 21.3-8.1c17.7 0 32 14.3 32 32l0 80 0 32c0 17.7 14.3 32 32 32s32-14.3 32-32l0-32c0-106-86-192-192-192zm64 192a64 64 0 1 0 -128 0 64 64 0 1 0 128 0z" fill="currentColor"/></svg>
+    </div>
     <div class="container px-5 py-24 m-auto">
       <div class="lg:w-4/5 mx-auto flex flex-wrap">
         <div class="lg:w-1/2 w-full lg:pr-10 lg:py-6 mb-6 lg:mb-0">
-          <h2 class="text-sm title-font text-gray-500 tracking-widest">EMAILS EXTRACTOR</h2>
-          <h1 class="text-gray-900 text-3xl title-font font-medium">Paste Text/URL or Upload File</h1>
+          <h2 class="text-sm title-font text-gray-500 tracking-widest">EMAIL EXTRACTOR</h2>
+          <h1 class="text-gray-900 text-2xl md:text-3xl title-font font-medium">Paste Text/URL or Upload File</h1>
           <label for="textToggle" class="switch cursor-pointer relative flex w-[6.7rem] scale-75 overflow-hidden ml-auto px-2 mb-4" onclick="textToUrl()">
             <input type="checkbox" name="" class="peer hidden" id="textToggle"/>
             <div
@@ -42,17 +47,12 @@
           <textarea class="w-full leading-relaxed mb-2 pl-3 pt-2 focus:outline-none" rows="10" name="" id="textInput"
             placeholder="Enter text to extarct!"></textarea>
           <div class="flex items-center mb-6">
-            <input type="file" name="" id="fileInput" accept=".pdf, .docx, .doc, .pptx, .xlsx, .txt" onchange="fileData()">
+            <input type="file" name="" id="fileInput" accept=".pdf, .docx, .doc, .pptx, .xlsx, .txt" onchange="baseConditions()">
             <p onclick="document.querySelector('#modal').style.display = 'flex'" class="cursor-pointer ml-auto">*<span class="hover:underline">Guide</span></p>
-          </div>
-          <div class="flex border-t border-gray-200 py-2">
-            <span class="text-gray-500">Text count</span>
-            <!-- <span class="ml-auto text-gray-900">1025</span> -->
-             <button class="ml-auto text-sm text-white bg-purple-500 px-3 rounded hover:bg-purple-600">Reveal</button>
           </div>
           <div class="flex border-t border-b border-gray-200 py-2 mb-6">
             <span class="text-gray-500">Emails extracted</span>
-            <span class="ml-auto text-gray-900">5</span>
+            <span class="ml-auto text-gray-900" id="emailCount">0</span>
           </div>
           <div class="flex">
             <button
@@ -61,16 +61,13 @@
         </div>
         <div
           class="lg:w-1/2 w-full lg:h-[600px] h-64 object-cover object-center rounded border border-black/30 overflow-y-scroll">
-          <p class="pl-4 pt-3 text-xl md:text-2xl">No email to show!</p>
-          <!-- <ul class="pl-3 pt-2">
-                    <li>hamza@email.com</li>
-                    <li>sidd@email.com</li>
-                    <li>hamza.web24@gmail.com</li>
-                </ul> -->
+          <p class="pl-4 pt-3 text-xl md:text-2xl" id="showEmailAlternate">No email to show!</p>
+          <ul class="pl-4 pt-3" id="showEmail"></ul>
         </div>
       </div>
     </div>
   </section>
+  <footer class="w-full h-[5vh] bg-purple-500"></footer>
   <main class="fixed inset-0 w-full h-screen bg-black/70 hidden justify-center items-center" id="modal">
     <div class="relative rounded-xl px-10 py-8 bg-white">
       <button class="cursor-pointer absolute top-2 right-4 text-lg font-bold hover:scale-110" onclick="document.querySelector('#modal').style.display = 'none'">x</button>
@@ -88,45 +85,96 @@
     textToggle = document.querySelector('#textToggle');
     textInput = document.querySelector('#textInput');
     fileInput = document.querySelector('#fileInput');
+    emailCount = document.querySelector('#emailCount');
+    showEmailAlternate = document.querySelector('#showEmailAlternate');
+    showEmail = document.querySelector('#showEmail');
 
-    emailResponse = '';
+    showEmail.style.display = 'none'
+
+    let reqData;
+    emailResponse = [];
 
     function textToUrl(){
       textToggle.checked ? textInput.placeholder = 'Enter url to extract' : textInput.placeholder = 'Enter text to extract'
     }
 
-    function fileData(){
-      console.warn(fileInput.files[0].mozFullPath);
+    function baseConditions() {
+    const formData = new FormData();
+
+    if (fileInput.files.length > 0) {
+      formData.append('file', fileInput.files[0]);
+      textInput.value = "You can't edit until you remove the file or refresh your browser";
+      textInput.setAttribute('readonly', true);
+      textInput.style.cursor = 'not-allowed';
+      reqData = formData;
+    } else {
+      textInput.removeAttribute('readonly');
+      textInput.style.cursor = 'auto';
+
+      let textData;
+      if (textToggle.checked) {
+        textData = {
+          content: textInput.value,
+          type: 'url',
+        };
+      } else {
+        textData = {
+          content: textInput.value,
+          type: 'text',
+        };
+      }
+      reqData = JSON.stringify(textData);
     }
+  }
+
+  // API Call function
+  async function apiCall() {
+    baseConditions();
+
+    try {
+      const response = await fetch('/api/extract', {
+        method: 'POST',
+        headers: fileInput.files.length > 0 ? {} : { 'Content-Type': 'application/json' },
+        body: reqData
+      });
+
+      emailResponse = await response.json();
+
+      emailCount.innerText = emailResponse.emailCount;
+    if(emailResponse.emails.length > 0){
+      if(showEmail.firstChild){
+        while (showEmail.firstChild) {
+                showEmail.removeChild(showEmail.firstChild);
+            }
+      }
+      showEmailAlternate.style.display = 'none';
+      showEmail.style.display = 'block';
+      emailResponse.emails.forEach((e)=>{
+        const li = document.createElement('li');
+        li.textContent = e;
+        showEmail.appendChild(li);
+      })
+    }
+    else {
+      showEmail.style.display = 'none';
+      showEmailAlternate.style.display = 'block';
+      showEmailAlternate.innerText = 'No email to show!!'
+
+    }
+    textInput.value = ''
+    fileInput.value = ''
+    textInput.removeAttribute('readonly');
+    textInput.style.cursor = 'auto';
+
+      console.warn(emailResponse);
+      alert('Success');
+    } catch (err) {
+      alert('Failed');
+      console.error('ERROR POSTING DATA', err);
+    }
+
     
-
-    // API CALL
-    async function apiCall() {
-      data = {
-        content:"test",
-        type:"url"
-      }
-      try{
-        const response = await fetch('/api/extract', {
-          method:'POST',
-          headers:{
-            'Content-Type':'application/json'
-          },
-          body:JSON.stringify(data)
-        });
-        
-        const responseData = await response;
-        responseData.json().then(res=>{
-          console.warn(res);
-        });
-
-        alert("suucess");
-        
-      } catch (err){
-        console.error("ERROR POSTING DATA", err);
-      }
-      
-    }
+  }
   </script>
 </body>
 
