@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, render_template
-from modules.regex import email_extract
-import modules.extractors as extractor
+from .modules.regex import email_extract
+from .modules.extractors import extract_text_from_file, extract_url
 
 
 app = Flask(__name__)
@@ -15,7 +15,7 @@ def extract_route():
     
     if request.files:
         mainData = request.files['file']
-        extractedEmails = email_extract(extractor.extract_text_from_file(mainData))
+        extractedEmails = email_extract(extract_text_from_file(mainData))
         response = {
             "message":"Successfully Extracted",
             "emails":extractedEmails,
@@ -26,7 +26,7 @@ def extract_route():
     else:
         mainData = request.get_json()
         if mainData['type'] == 'url':
-            extractedEmails = email_extract(extractor.extract_url(mainData['content']))
+            extractedEmails = email_extract(extract_url(mainData['content']))
             response = {
                 "message":"Successfully Extracted",
                 "emails":extractedEmails,
