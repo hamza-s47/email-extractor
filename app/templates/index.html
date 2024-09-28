@@ -51,7 +51,7 @@
           </label>
 
           <textarea class="w-full leading-relaxed mb-2 pl-3 pt-2 focus:outline-none" rows="10" name="" id="textInput"
-            placeholder="Enter text to extarct!"></textarea>
+            placeholder="Enter raw text to extarct!"></textarea>
           <div class="flex items-center mb-6">
             <input type="file" name="" id="fileInput" accept=".pdf, .docx, .doc, .pptx, .xlsx, .txt"
               onchange="baseConditions()">
@@ -121,7 +121,7 @@
       <h2 class="text-2xl font-black mb-2 uppercase">About This App</h2>
       <p class="md:text-lg font-medium my-2">
         This simple tool helps you to extract email addresses from various file types like PDF, DOCX, DOC, PPTX, XLSX,
-        TXT, and even from WEBSITES. You can also enter your own text to find emails. <br><br>This app is currently in
+        TXT, and even from WEBSITES. You can also enter your own text to find only emails. <br><br>This app is currently in
         beta and under development, with an accuracy of about 80%. Best of all, it’s completely
         free! I appreciate your feedback to help me improve. Whether you’re a student, a professional, or just someone
         looking to gather emails, I’m here to assist you. Thank you for choosing this app!
@@ -202,7 +202,7 @@
     }, 1500);
 
     function textToUrl() {
-      textToggle.checked ? textInput.placeholder = 'Enter url to extract' : textInput.placeholder = 'Enter text to extract'
+      textToggle.checked ? textInput.placeholder = 'Enter url to extract' : textInput.placeholder = 'Enter raw text to extract'
     }
 
     function baseConditions() {
