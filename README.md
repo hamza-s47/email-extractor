@@ -19,3 +19,5 @@ The project can extract emails from:
 - Flask routing & APIs
 - HTML templating with render_template
 - Integrating backend + frontend
+
+**Do check it on:** https://email-extractor.vercel.app
